@@ -1,7 +1,6 @@
 import path from "path";
 import React, { useEffect } from "react";
 import {
-  // BrowserRouter as Router,
   Switch,
   Route,
   Link,
@@ -26,6 +25,11 @@ const books = Array.prototype.concat.apply(
   [],
   manifest.map((page) => page.books)
 );
+const stat = {
+  ngames: manifest.length,
+  nbooks: books.length,
+  npages: books.map(book => book.pages.length).reduce((sum, v) => v + sum, 0),
+};
 
 const getBookById = (bookId) => {
   return books.find((book) => book.id === bookId);
@@ -77,6 +81,7 @@ function Home() {
   return (
     <div>
       <Nav />
+      <div class="meta">{stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and counting...</div>
       {manifest.map((item) => (
         <PageItem {...item} />
       ))}
@@ -92,7 +97,7 @@ function PageItem(props) {
     <div className="page-item">
       <div>
         <span className="title">
-          {dateformat(new Date(timestamp), "d mmm yyyy")}
+          {dateformat(new Date(timestamp), "d mmmm yyyy")}
         </span>{" "}
         <span className="meta right">{books.length} books</span>
       </div>
@@ -106,7 +111,7 @@ function PageItem(props) {
               className="page-item-book"
               onClick={() => history.push(`/${book.id}`)}
             >
-              <div className="page-item-book-title">
+              <div className="page-item-book-info">
                 <h5>{book.author}'s book</h5>
                 {title ? <div className="meta">{title}</div> : null}
               </div>
@@ -153,7 +158,7 @@ function Book() {
       <div className="header">
         <h1>{author}'s book</h1>
         <div className="meta">
-          Created on {dateformat(new Date(timestamp), "d mmm yyyy HH:MM")}
+          Created on {dateformat(new Date(timestamp), "d mmmm yyyy HH:MM")}
         </div>
         <div className="meta">
           Players: {pages.map((page) => page.author).join(", ")}

@@ -9,7 +9,6 @@ body {
   margin-left: auto;
   margin-right: auto;
   width: 600px;
-  display: flex;
   padding-left: 10px;
   padding-right: 10px;
   padding-top: 10px;
@@ -109,7 +108,8 @@ body {
 
   .page-item-book {
     display: flex;
-    margin-top: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     min-height: 80px;
     border-bottom: solid;
     border-bottom-color:  #c0c0c0;
@@ -123,7 +123,7 @@ body {
       }
     }
 
-    .page-item-book-title {
+    .page-item-book-info {
       h5 {
         margin-top: 0;
         margin-bottom: 0;
@@ -134,6 +134,15 @@ body {
       width: 200px;
       margin-left: auto;
       order: 2;
+    }
+
+    @media screen and (max-width: 600px) {
+      .page-item-book-info {
+        width: 58%;
+      }
+      .page-item-book-thumbnail {
+        width: 40%;
+      }
     }
   }
 }
