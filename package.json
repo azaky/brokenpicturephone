@@ -1,0 +1,23 @@
+{
+  "name": "brokenpicturephone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "manifest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azaky/brokenpicturephone.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/azaky/brokenpicturephone/issues"
+  },
+  "homepage": "https://github.com/azaky/brokenpicturephone#readme",
+  "dependencies": {
+    "jsdom": "^16.6.0"
+  }
+}
