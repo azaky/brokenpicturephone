@@ -1,5 +1,5 @@
 import path from "path";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Switch,
   Route,
@@ -18,9 +18,9 @@ import { CardMedia } from "@material-ui/core";
 
 import "./App.scss";
 
+// Prepare data from generated manifest.
 import manifest from "./manifest.json";
 
-// Prepare data from manifest.
 const books = Array.prototype.concat.apply(
   [],
   manifest.map((page) => page.books)
@@ -28,7 +28,7 @@ const books = Array.prototype.concat.apply(
 const stat = {
   ngames: manifest.length,
   nbooks: books.length,
-  npages: books.map(book => book.pages.length).reduce((sum, v) => v + sum, 0),
+  npages: books.map((book) => book.pages.length).reduce((sum, v) => v + sum, 0),
 };
 
 const getBookById = (bookId) => {
@@ -53,7 +53,6 @@ const getPreviousBookId = (bookId) => {
 
 export default function App() {
   return (
-    // <Router basename={new URL(homepage).pathname}>
     <HashRouter>
       <div className="container">
         <Switch>
@@ -81,7 +80,10 @@ function Home() {
   return (
     <div>
       <Nav />
-      <div class="meta">{stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and counting...</div>
+      <div class="meta">
+        {stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and
+        counting...
+      </div>
       {manifest.map((item) => (
         <PageItem {...item} />
       ))}
@@ -104,7 +106,9 @@ function PageItem(props) {
       <div>
         {books.map((book) => {
           const title = book.pages.find((page) => !!page.text)?.text;
-          const thumbnail = book.pages.find((page) => !!page.image && !page.text)?.image;
+          const thumbnail = book.pages.find(
+            (page) => !!page.image && !page.text
+          )?.image;
 
           return (
             <div
@@ -140,21 +144,79 @@ function ScrollToTop() {
   return null;
 }
 
+function Page(props) {
+  const { index, author, text, image } = props;
+  return (
+    <div className="page">
+      <div className="meta">
+        Page {index} by {author}
+      </div>
+      {text ? <div className="text">{text}</div> : null}
+      {image ? (
+        <img
+          src={path.join(process.env.PUBLIC_URL, "images", image)}
+          alt={`Page ${index} by ${author}`}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function Book() {
   const { bookId } = useParams();
   const history = useHistory();
 
-  const book = getBookById(bookId);
-  const { author, pages, timestamp } = book;
   const prevBookId = getPreviousBookId(bookId);
   const nextBookId = getNextBookId(bookId);
+
+  const gotoPrevBook = useCallback(() => {
+    history.push(`/${prevBookId}`);
+  }, [prevBookId, history]);
+
+  const gotoNextBook = useCallback(() => {
+    history.push(`/${nextBookId}`);
+  }, [nextBookId, history]);
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "ArrowLeft" && prevBookId) gotoPrevBook();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [prevBookId, gotoPrevBook]);
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "ArrowRight" && nextBookId) gotoNextBook();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [nextBookId, gotoNextBook]);
+
+  const book = getBookById(bookId);
+
+  if (!book) {
+    return (
+      <div className="book">
+        <ScrollToTop />
+        <Nav />
+        <div className="header">
+          <h1>Book Not Found</h1>
+          <div>
+            The book with id <strong>{bookId}</strong> cannot be found. Recheck
+            the URL or <Link to="/">go to homepage</Link>.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { author, pages, timestamp } = book;
 
   return (
     <div className="book">
       <ScrollToTop />
-
       <Nav />
-
       <div className="header">
         <h1>{author}'s book</h1>
         <div className="meta">
@@ -176,7 +238,7 @@ function Book() {
               variant="contained"
               color="secondary"
               startIcon={<ArrowBackIcon />}
-              onClick={() => history.push(`/${prevBookId}`)}
+              onClick={gotoPrevBook}
             >
               Previous
             </Button>
@@ -190,7 +252,7 @@ function Book() {
               variant="contained"
               color="secondary"
               endIcon={<ArrowForwardIcon />}
-              onClick={() => history.push(`/${nextBookId}`)}
+              onClick={gotoNextBook}
             >
               Next
             </Button>
@@ -199,24 +261,6 @@ function Book() {
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function Page(props) {
-  const { index, author, text, image } = props;
-  return (
-    <div className="page">
-      <div className="meta">
-        Page {index} by {author}
-      </div>
-      {text ? <div className="text">{text}</div> : null}
-      {image ? (
-        <img
-          src={path.join(process.env.PUBLIC_URL, "images", image)}
-          alt={`Page ${index} by ${author}`}
-        />
-      ) : null}
     </div>
   );
 }
