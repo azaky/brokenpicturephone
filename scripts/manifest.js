@@ -4,12 +4,11 @@ const path = require("path");
 const { JSDOM } = require("jsdom");
 
 const booksDirectory = path.join(__dirname, "../books");
-const imagesDirectory = path.join(__dirname, "../images");
+const imagesDirectory = path.join(__dirname, "../public/images");
 
-if (fs.existsSync(imagesDirectory)) {
-  fs.rmdirSync(imagesDirectory, { recursive: true });
+if (!fs.existsSync(imagesDirectory)) {
+  fs.mkdirSync(imagesDirectory, { recursive: true });
 }
-fs.mkdirSync(imagesDirectory, { recursive: true });
 
 const promises = fs.readdirSync(booksDirectory).map(async (file) => {
   try {
@@ -87,18 +86,25 @@ const promises = fs.readdirSync(booksDirectory).map(async (file) => {
             } else {
               try {
                 const format = /^data:image\/(\w+);/.exec(data)[1];
-                const buffer = Buffer.from(
-                  data.replace(/^data:image\/\w+;base64,/, ""),
-                  "base64"
-                );
-                let imageFilename = `${timestamp}-${bookAuthor}-${index}${
+                const imageFilename = `${timestamp}-${bookAuthor}-${index}${
                   author ? `-${author}` : ""
                 }.${format}`;
-                fs.writeFileSync(
-                  path.join(imagesDirectory, imageFilename),
-                  buffer
-                );
-                image = imageFilename;
+                const imagePath = path.join(imagesDirectory, imageFilename);
+                
+                // Do not rewrite to disk if image already exists.
+                if (fs.existsSync(imagePath)) {
+                  image = imageFilename;
+                } else {
+                  const buffer = Buffer.from(
+                    data.replace(/^data:image\/\w+;base64,/, ""),
+                    "base64"
+                  );
+                  fs.writeFileSync(
+                    imagePath,
+                    buffer
+                  );
+                  image = imageFilename;
+                }
               } catch (err) {
                 console.error(
                   `File ${file}: Book [${bookTitle}]: Skipping page ${index} image, encountered error: ${err}`
@@ -110,7 +116,9 @@ const promises = fs.readdirSync(booksDirectory).map(async (file) => {
         });
 
         return {
+          id: `${timestamp}-${bookAuthor}`,
           author: bookAuthor,
+          timestamp,
           pages,
         };
       })
@@ -135,10 +143,13 @@ Promise.all(promises)
   )
   .then((pages) => {
     // Check for duplicate timestamps.
-    let uniquePages = [], timestamps = new Set();
-    pages.forEach(page => {
+    let uniquePages = [],
+      timestamps = new Set();
+    pages.forEach((page) => {
       if (timestamps.has(page.timestamp)) {
-        console.warn(`Dropping page ${page.title} due to duplicated timestamp.`);
+        console.warn(
+          `Dropping page ${page.title} due to duplicated timestamp.`
+        );
         return;
       }
       uniquePages.push(page);
@@ -148,9 +159,5 @@ Promise.all(promises)
     return uniquePages;
   })
   .then((pages) => {
-    fs.writeFileSync(
-      "./manifest.json",
-      JSON.stringify(pages, null, 2),
-      "utf8"
-    );
+    fs.writeFileSync(path.join(__dirname, "../src/manifest.json"), JSON.stringify(pages, null, 2), "utf8");
   });

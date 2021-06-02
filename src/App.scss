@@ -1,0 +1,139 @@
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+  display: flex;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  box-sizing: border-box;
+
+  @media screen and (max-width: 600px) {
+    width: 100%;
+  }
+}
+
+.top-navigation {
+  font-family: 'Sigmar One';
+  font-size: 1.5rem;
+  a {
+    text-decoration: none;
+    color: black;
+  }
+}
+
+.meta {
+  color: #606060;
+  font-size: 0.8rem;
+}
+
+.book {
+  width: 100%;
+  padding-bottom: 60px;
+
+  h1 {
+    margin-bottom: 0;
+    font-size: 2rem;
+  }
+}
+
+.bottom-navigation {
+  position: fixed;
+  bottom: 0;
+  height: 60px;
+  width: 580px;
+  background-color: white;
+
+  font-size: 2.5em;
+  color: #17BEBB;
+  display: flex;
+  justify-content: space-evenly;
+
+  box-sizing: border-box;
+
+  button, div {
+    width: 250px;
+  }
+
+  @media screen and (max-width: 600px) {
+    width: calc(100vw - 20px);
+
+    button, div {
+      width: calc(50vw - 50px);
+    }
+  }
+}
+
+.page {
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-top: solid;
+  border-top-color:  #c0c0c0;
+  border-top-width: 1pt;
+  
+  .text {
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+
+  img {
+    max-width: 100%;
+    margin-top: 10px
+  }
+
+  &:first-child {
+    margin-top: 20px;
+  }
+}
+
+.right {
+  float: right;
+}
+
+.page-item {
+  padding-top: 20px;
+
+  .title {
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+
+  .page-item-book {
+    display: flex;
+    margin-top: 5px;
+    min-height: 80px;
+    border-bottom: solid;
+    border-bottom-color:  #c0c0c0;
+    border-bottom-width: 1pt;
+
+    &:hover {
+      cursor: pointer;
+      background-color: #e6e6e6;
+      .page-item-book-thumbnail {
+        opacity: 0.6;
+      }
+    }
+
+    .page-item-book-title {
+      h5 {
+        margin-top: 0;
+        margin-bottom: 0;
+        font-size: 1rem;
+      }
+    }
+    .page-item-book-thumbnail {
+      width: 200px;
+      margin-left: auto;
+      order: 2;
+    }
+  }
+}
