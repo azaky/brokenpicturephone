@@ -1,13 +1,14 @@
 import path from "path";
 import React, { useEffect } from "react";
 import {
-  BrowserRouter as Router,
+  // BrowserRouter as Router,
   Switch,
   Route,
   Link,
   useParams,
   useHistory,
   useLocation,
+  HashRouter,
 } from "react-router-dom";
 import dateformat from "dateformat";
 
@@ -48,7 +49,8 @@ const getPreviousBookId = (bookId) => {
 
 export default function App() {
   return (
-    <Router>
+    // <Router basename={new URL(homepage).pathname}>
+    <HashRouter>
       <div className="container">
         <Switch>
           <Route path="/:bookId">
@@ -59,7 +61,7 @@ export default function App() {
           </Route>
         </Switch>
       </div>
-    </Router>
+    </HashRouter>
   );
 }
 
@@ -89,10 +91,10 @@ function PageItem(props) {
   return (
     <div className="page-item">
       <div>
-        <span class="title">
+        <span className="title">
           {dateformat(new Date(timestamp), "d mmm yyyy")}
         </span>{" "}
-        <span class="meta right">{books.length} books</span>
+        <span className="meta right">{books.length} books</span>
       </div>
       <div>
         {books.map((book) => {
@@ -111,7 +113,7 @@ function PageItem(props) {
               {thumbnail ? (
                 <CardMedia
                   className="page-item-book-thumbnail"
-                  image={path.join("images", thumbnail)}
+                  image={path.join(process.env.PUBLIC_URL, "images", thumbnail)}
                   title={`${book.author}'s book`}
                 />
               ) : null}
@@ -148,7 +150,7 @@ function Book() {
 
       <Nav />
 
-      <div class="header">
+      <div className="header">
         <h1>{author}'s book</h1>
         <div className="meta">
           Created on {dateformat(new Date(timestamp), "d mmm yyyy HH:MM")}
@@ -157,13 +159,13 @@ function Book() {
           Players: {pages.map((page) => page.author).join(", ")}
         </div>
       </div>
-      <div class="pages">
+      <div className="pages">
         {pages.map((page) => (
           <Page {...page} />
         ))}
       </div>
-      <div class="bottom-navigation">
-        <div class="left">
+      <div className="bottom-navigation">
+        <div className="left">
           {prevBookId ? (
             <Button
               variant="contained"
@@ -177,7 +179,7 @@ function Book() {
             <div />
           )}
         </div>
-        <div class="right">
+        <div className="right">
           {nextBookId ? (
             <Button
               variant="contained"
@@ -206,7 +208,7 @@ function Page(props) {
       {text ? <div className="text">{text}</div> : null}
       {image ? (
         <img
-          src={path.join("images", image)}
+          src={path.join(process.env.PUBLIC_URL, "images", image)}
           alt={`Page ${index} by ${author}`}
         />
       ) : null}
