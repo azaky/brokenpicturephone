@@ -5,29 +5,42 @@ const { JSDOM } = require("jsdom");
 
 const booksDirectory = path.join(__dirname, "../books");
 const imagesDirectory = path.join(__dirname, "../public/images");
+const targetFilename = path.join(__dirname, "../src/manifest.json");
 
 if (!fs.existsSync(imagesDirectory)) {
   fs.mkdirSync(imagesDirectory, { recursive: true });
 }
 
-const promises = fs.readdirSync(booksDirectory).map(async (file) => {
-  try {
-    if (!file.endsWith(".html")) return;
+let previousManifest = [];
+if (fs.existsSync(targetFilename)) {
+  previousManifest = JSON.parse(fs.readFileSync(targetFilename, 'utf8'));
+}
 
-    const dom = await JSDOM.fromFile(path.join(booksDirectory, file));
-    console.log(`Parsing file ${file} ...`);
+const promises = fs.readdirSync(booksDirectory).map(async (filename) => {
+  try {
+    if (!filename.endsWith(".html")) return;
+
+    const previousData = previousManifest.find(data => data.filename === filename);
+    if (previousData) {
+      // TODO: Make sure all images also exist.
+      console.log(`Skipping file ${filename}: importing from the previous manifest`);
+      return previousData;
+    }
+
+    const dom = await JSDOM.fromFile(path.join(booksDirectory, filename));
+    console.log(`Parsing file ${filename} ...`);
 
     const titleEl = dom.window.document.body.firstElementChild;
     if (titleEl.tagName !== "H1") {
       console.log(
-        `File ${file}: Skipping, expected H1 first element, got ${titleEl.tagName}`
+        `File ${filename}: Skipping, expected H1 first element, got ${titleEl.tagName}`
       );
       return;
     }
     const title = titleEl.textContent;
 
     // Attempt to parse timestamp, first from filename, then attempt parse from page title.
-    let timestamp = parseFloat(/\d{13}/.exec(file)?.[0]);
+    let timestamp = parseFloat(/\d{13}/.exec(filename)?.[0]);
     if (!timestamp) {
       const titleTimestamp = /\d+\/\d+\/\d+,\s+\d+\:\d+\:\d+\s+[A|P]M/.exec(
         title
@@ -38,7 +51,7 @@ const promises = fs.readdirSync(booksDirectory).map(async (file) => {
     }
     if (!timestamp) {
       console.log(
-        `File ${file}: Skipping, invalid timestamp, filename and page title are invalid (filename = ${file}, title = ${title})`
+        `File ${filename}: Skipping, invalid timestamp, filename and page title are invalid (filename = ${filename}, title = ${title})`
       );
       return;
     }
@@ -49,7 +62,7 @@ const promises = fs.readdirSync(booksDirectory).map(async (file) => {
         const bookTitleEl = article.firstElementChild;
         if (bookTitleEl.tagName !== "H2") {
           console.log(
-            `File ${file}: Skipping book ${
+            `File ${filename}: Skipping book ${
               i + 1
             }, expected h2 first element, got ${bookTitleEl.tagName}`
           );
@@ -81,7 +94,7 @@ const promises = fs.readdirSync(booksDirectory).map(async (file) => {
             const data = img.src;
             if (!data.startsWith("data:image/")) {
               console.log(
-                `File ${file}: Book [${bookTitle}]: Skipping page ${index} image, expected base64 format, got url ${src}`
+                `File ${filename}: Book [${bookTitle}]: Skipping page ${index} image, expected base64 format, got url ${src}`
               );
             } else {
               try {
@@ -107,7 +120,7 @@ const promises = fs.readdirSync(booksDirectory).map(async (file) => {
                 }
               } catch (err) {
                 console.error(
-                  `File ${file}: Book [${bookTitle}]: Skipping page ${index} image, encountered error: ${err}`
+                  `File ${filename}: Book [${bookTitle}]: Skipping page ${index} image, encountered error: ${err}`
                 );
               }
             }
@@ -129,11 +142,12 @@ const promises = fs.readdirSync(booksDirectory).map(async (file) => {
     return {
       title,
       timestamp,
+      filename,
       players,
       books,
     };
   } catch (err) {
-    console.error(`File ${file}: Error parsing file: ${err}`);
+    console.error(`File ${filename}: Error parsing file: ${err}`);
   }
 });
 
@@ -159,5 +173,5 @@ Promise.all(promises)
     return uniquePages;
   })
   .then((pages) => {
-    fs.writeFileSync(path.join(__dirname, "../src/manifest.json"), JSON.stringify(pages, null, 2), "utf8");
+    fs.writeFileSync(targetFilename, JSON.stringify(pages, null, 2), "utf8");
   });

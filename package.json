@@ -19,10 +19,9 @@
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "init": "node scripts/manifest.js",
+    "gen-manifest": "node scripts/gen-manifest.js",
     "start": "react-scripts start",
-    "__build": "node scripts/manifest.js && react-scripts build",
-    "build": "react-scripts build",
+    "build": "node scripts/gen-manifest.js && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
