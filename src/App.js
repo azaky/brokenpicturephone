@@ -14,7 +14,7 @@ import dateformat from "dateformat";
 import Button from "@material-ui/core/Button";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
-import { CardMedia } from "@material-ui/core";
+import { CardMedia, Chip } from "@material-ui/core";
 
 import "./App.scss";
 
@@ -126,7 +126,7 @@ function Game(props) {
     );
   }
 
-  const { books, timestamp } = game;
+  const { books, timestamp, type } = game;
 
   const content = (
     <div className="game">
@@ -134,6 +134,11 @@ function Game(props) {
         <span className="title">
           {dateformat(new Date(timestamp), "d mmmm yyyy")}
         </span>{" "}
+        {type ? (
+          <span>
+            <Chip size="small" label={type} />
+          </span>
+        ) : null}
         <span className="subtitle">{books.length} books</span>
       </div>
       <div>
@@ -253,14 +258,18 @@ function Book() {
     );
   }
 
-  const { pages, timestamp } = book;
+  const { pages, timestamp, type } = book;
 
   return (
     <div className="book">
       <ScrollToTop />
       <Nav />
       <div className="header">
-        <h1>{author}'s book</h1>
+        <div>
+          <span className="title">{author}'s book</span>
+          {' '}
+          <Chip className="label" size="small" label={type} />
+        </div>
         <div className="meta">
           Created on{" "}
           <Link to={`/${gameId}`}>

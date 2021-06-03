@@ -160,8 +160,26 @@ const parseFile = async (filename) => {
             .join("|")
         );
 
+        // Game Type:
+        // - Text: No images.
+        // - Alternating: Text-Image-Text-Image-etc.
+        // - Standard: Text first, then all images.
+        // By default, fallback to Standard.
+        let type = "standard";
+        const nImages = pages.filter((page) => !!page.image).length;
+        const nTexts = pages.filter((page) => !!page.text).length;
+        if (!nImages) {
+          type = "text";
+        } else if (
+          Math.abs(nImages - nTexts) < 2 &&
+          nImages + nTexts === pages.length
+        ) {
+          type = "alternating";
+        }
+
         return {
           id: `${id}/${bookAuthor}`,
+          type,
           author: bookAuthor,
           timestamp,
           hash,
@@ -173,8 +191,18 @@ const parseFile = async (filename) => {
     const players = books.map((book) => book.author).filter((p) => !!p);
     const hash = getHash(books.map((book) => book.hash).join("|"));
 
+    const type = books[0].type;
+    if (books.find((book) => book.type !== type)) {
+      console.warn(
+        `File ${filename}: found multiple book types within a single game. Picking the first book type (${type}) as game type.`
+      );
+    }
+
+    console.log(`Parsing file ${filename} done!`);
+
     return {
       id,
+      type,
       timestamp,
       players,
       hash,
@@ -222,8 +250,9 @@ Promise.resolve()
     );
 
     console.log(
-      `Finished processing ${uniqueGames.length} games from ${filenames.length} files to ${targetFilename}`
+      `Processing ${uniqueGames.length} games from ${filenames.length} done!`
     );
+    console.log(`Manifest written to ${targetFilename}`);
   })
   .catch((err) => {
     console.error(`Error: ${err}`);

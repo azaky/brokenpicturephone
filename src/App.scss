@@ -37,9 +37,13 @@ body {
   width: 100%;
   padding-bottom: 60px;
 
-  h1 {
+  .title {
     margin-bottom: 0;
     font-size: 2rem;
+  }
+
+  .label {
+    margin-bottom: 5px;
   }
 }
 
