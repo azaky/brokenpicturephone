@@ -1,7 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const { createHash } = require("crypto");
 
 const { JSDOM } = require("jsdom");
+
+const getHash = (text) => createHash("sha256").update(text).digest("hex");
 
 const booksDirectory = path.join(__dirname, "../books");
 const imagesDirectory = path.join(__dirname, "../public/images");
@@ -13,29 +16,47 @@ if (!fs.existsSync(imagesDirectory)) {
 
 let previousManifest = [];
 if (fs.existsSync(targetFilename)) {
-  previousManifest = JSON.parse(fs.readFileSync(targetFilename, 'utf8'));
+  previousManifest = JSON.parse(fs.readFileSync(targetFilename, "utf8"));
 }
 
-const promises = fs.readdirSync(booksDirectory).map(async (filename) => {
+const parseFile = async (filename) => {
   try {
     if (!filename.endsWith(".html")) return;
 
-    const previousData = previousManifest.find(data => data.filename === filename);
+    console.log(`Parsing file ${filename} ...`);
+
+    const previousData = previousManifest.find(
+      (data) => data.filename === filename
+    );
     if (previousData) {
-      // TODO: Make sure all images also exist.
-      console.log(`Skipping file ${filename}: importing from the previous manifest`);
-      return previousData;
+      let imagesExist = true;
+      for (const book of previousData.books) {
+        for (const page of book.pages) {
+          if (page.image) {
+            if (!fs.existsSync(path.join(imagesDirectory, page.image))) {
+              imagesExist = false;
+              break;
+            }
+          }
+        }
+        if (!imagesExist) break;
+      }
+      if (imagesExist) {
+        console.log(
+          `Skipping file ${filename}: importing from the previous manifest`
+        );
+        return previousData;
+      }
     }
 
     const dom = await JSDOM.fromFile(path.join(booksDirectory, filename));
-    console.log(`Parsing file ${filename} ...`);
 
     const titleEl = dom.window.document.body.firstElementChild;
     if (titleEl.tagName !== "H1") {
       console.log(
         `File ${filename}: Skipping, expected H1 first element, got ${titleEl.tagName}`
       );
-      return;
+      return null;
     }
     const title = titleEl.textContent;
 
@@ -53,8 +74,10 @@ const promises = fs.readdirSync(booksDirectory).map(async (filename) => {
       console.log(
         `File ${filename}: Skipping, invalid timestamp, filename and page title are invalid (filename = ${filename}, title = ${title})`
       );
-      return;
+      return null;
     }
+
+    const id = path.parse(filename).name;
 
     const articles = dom.window.document.getElementsByTagName("article");
     const books = [...articles]
@@ -66,112 +89,143 @@ const promises = fs.readdirSync(booksDirectory).map(async (filename) => {
               i + 1
             }, expected h2 first element, got ${bookTitleEl.tagName}`
           );
-          return;
+          return null;
         }
         const bookTitle = bookTitleEl.textContent;
         const bookAuthor = /(.+)'s Book/.exec(bookTitle)[1] || null;
 
         const sections = article.getElementsByTagName("section");
-        const pages = [...sections].map((section, j) => {
-          let index = j + 1,
-            author = null,
-            image = null,
-            text = null;
-          const h3 = section.getElementsByTagName("h3")[0];
-          const h4 = section.getElementsByTagName("h4")[0];
-          const img = section.getElementsByTagName("img")[0];
-          if (h3) {
-            const matches = /Page (\d+), (.*)\:/.exec(h3.textContent);
-            if (matches) {
-              index = parseInt(matches[1], 10);
-              author = matches[2];
-            }
-          }
-          if (h4) {
-            text = h4.textContent;
-          }
-          if (img) {
-            const data = img.src;
-            if (!data.startsWith("data:image/")) {
-              console.log(
-                `File ${filename}: Book [${bookTitle}]: Skipping page ${index} image, expected base64 format, got url ${src}`
-              );
-            } else {
-              try {
-                const format = /^data:image\/(\w+);/.exec(data)[1];
-                const imageFilename = `${timestamp}-${bookAuthor}-${index}${
-                  author ? `-${author}` : ""
-                }.${format}`;
-                const imagePath = path.join(imagesDirectory, imageFilename);
-                
-                // Do not rewrite to disk if image already exists.
-                if (fs.existsSync(imagePath)) {
-                  image = imageFilename;
-                } else {
-                  const buffer = Buffer.from(
-                    data.replace(/^data:image\/\w+;base64,/, ""),
-                    "base64"
-                  );
-                  fs.writeFileSync(
-                    imagePath,
-                    buffer
-                  );
-                  image = imageFilename;
-                }
-              } catch (err) {
-                console.error(
-                  `File ${filename}: Book [${bookTitle}]: Skipping page ${index} image, encountered error: ${err}`
-                );
+        const pages = [...sections]
+          .map((section, j) => {
+            let index = j + 1,
+              author = null,
+              text = null,
+              image = null,
+              imageHash = null;
+            const h3 = section.getElementsByTagName("h3")[0];
+            const h4 = section.getElementsByTagName("h4")[0];
+            const img = section.getElementsByTagName("img")[0];
+            if (h3) {
+              const matches = /Page (\d+), (.*)\:/.exec(h3.textContent);
+              if (matches) {
+                index = parseInt(matches[1], 10);
+                author = matches[2];
               }
             }
-          }
-          return { index, author, image, text };
-        });
+            if (h4) {
+              text = h4.textContent;
+            }
+            if (img) {
+              const data = img.src;
+              if (!data.startsWith("data:image/")) {
+                console.log(
+                  `File ${filename}: Book [${bookTitle}]: Skipping page ${index} image, expected base64 format, got url ${data}`
+                );
+              } else {
+                try {
+                  const format = /^data:image\/(\w+);/.exec(data)[1];
+                  const imageFilename = `${id}-${bookAuthor}-${index}${
+                    author ? `-${author}` : ""
+                  }.${format}`;
+                  const imagePath = path.join(imagesDirectory, imageFilename);
+                  const hash = getHash(data);
+
+                  // Do not rewrite to disk if image already exists.
+                  if (fs.existsSync(imagePath)) {
+                    image = imageFilename;
+                    imageHash = hash;
+                  } else {
+                    const buffer = Buffer.from(
+                      data.replace(/^data:image\/\w+;base64,/, ""),
+                      "base64"
+                    );
+                    fs.writeFileSync(imagePath, buffer);
+                    image = imageFilename;
+                    imageHash = hash;
+                  }
+                } catch (err) {
+                  console.error(
+                    `File ${filename}: Book [${bookTitle}]: Skipping page ${index} image, encountered error: ${err}`
+                  );
+                }
+              }
+            }
+            return { index, author, text, image, imageHash };
+          })
+          .filter((page) => !!page);
+
+        const hash = getHash(
+          pages
+            .map((page) => `${page.text || ""}:${page.imageHash || ""}`)
+            .join("|")
+        );
 
         return {
-          id: `${timestamp}-${bookAuthor}`,
+          id: `${id}/${bookAuthor}`,
           author: bookAuthor,
           timestamp,
+          hash,
           pages,
         };
       })
       .filter((book) => !!book);
 
     const players = books.map((book) => book.author).filter((p) => !!p);
+    const hash = getHash(books.map((book) => book.hash).join("|"));
 
     return {
-      title,
+      id,
       timestamp,
-      filename,
       players,
+      hash,
       books,
     };
   } catch (err) {
     console.error(`File ${filename}: Error parsing file: ${err}`);
   }
-});
+};
 
-Promise.all(promises)
-  .then((pages) =>
-    pages.filter((page) => !!page).sort((a, b) => b.timestamp - a.timestamp)
-  )
-  .then((pages) => {
-    // Check for duplicate timestamps.
-    let uniquePages = [],
-      timestamps = new Set();
-    pages.forEach((page) => {
-      if (timestamps.has(page.timestamp)) {
-        console.warn(
-          `Dropping page ${page.title} due to duplicated timestamp.`
-        );
+Promise.resolve()
+  .then(async () => {
+    // Parse each file sequentially, is apparently faster than
+    // dropping everything at once to Promise.all.
+    // Perhaps tweaking the concurrency (e.g. tiny-async-pool)
+    // will result in better performance, but I'm too lazy 🤷‍♂️.
+    let games = [];
+    const filenames = fs.readdirSync(booksDirectory);
+    for (const filename of filenames) {
+      const game = await parseFile(filename);
+      if (game) {
+        games.push(game);
+      }
+    }
+
+    // Check for duplicate games.
+    let uniqueGames = [],
+      uniqueGamesHashes = new Set();
+    games.forEach((game) => {
+      if (uniqueGamesHashes.has(game.hash)) {
+        console.warn(`Dropping game ${game.id} due to duplicated hashes.`);
         return;
       }
-      uniquePages.push(page);
-      timestamps.add(page.timestamp);
+      uniqueGames.push(game);
+      uniqueGamesHashes.add(game.hash);
     });
 
-    return uniquePages;
+    // Sort by timestamp;
+    uniqueGames.sort((a, b) => b.timestamp - a.timestamp);
+
+    fs.writeFileSync(
+      targetFilename,
+      JSON.stringify(uniqueGames, null, 2),
+      "utf8"
+    );
+
+    console.log(
+      `Finished processing ${uniqueGames.length} games from ${filenames.length} files to ${targetFilename}`
+    );
   })
-  .then((pages) => {
-    fs.writeFileSync(targetFilename, JSON.stringify(pages, null, 2), "utf8");
+  .catch((err) => {
+    console.error(`Error: ${err}`);
+    process.exit(1);
   });

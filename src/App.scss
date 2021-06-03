@@ -94,53 +94,77 @@ body {
   }
 }
 
-.right {
-  float: right;
-}
-
-.page-item {
-  padding-top: 20px;
-
-  .title {
-    font-weight: bold;
-    font-size: 1.2rem;
+.game {
+  margin-bottom: 40px;
+  &:first-child {
+    margin-top: 20px;
   }
 
-  .page-item-book {
+  .game-title {
+    position: relative;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+
+    .title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      line-height: 1.2rem;
+    }
+    
+    .subtitle {
+      @extend .meta;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+  }
+
+  .game-book {
     display: flex;
     padding-top: 5px;
     padding-bottom: 5px;
-    min-height: 80px;
+    
     border-bottom: solid;
     border-bottom-color:  #c0c0c0;
     border-bottom-width: 1pt;
 
+    // .game-book is an <a/>, so we need to reset the style.
+    text-decoration: none;
+    color: black;
+    
+    &:first-child {
+      border-top: solid;
+      border-top-color:  #c0c0c0;
+      border-top-width: 1pt;
+    }
+
     &:hover {
       cursor: pointer;
       background-color: #e6e6e6;
-      .page-item-book-thumbnail {
+      .game-book-thumbnail {
         opacity: 0.6;
       }
     }
 
-    .page-item-book-info {
+    .game-book-info {
       h5 {
         margin-top: 0;
         margin-bottom: 0;
         font-size: 1rem;
       }
     }
-    .page-item-book-thumbnail {
+    .game-book-thumbnail {
       width: 200px;
+      height: 80px;
       margin-left: auto;
       order: 2;
     }
 
     @media screen and (max-width: 600px) {
-      .page-item-book-info {
+      .game-book-info {
         width: 58%;
       }
-      .page-item-book-thumbnail {
+      .game-book-thumbnail {
         width: 40%;
       }
     }

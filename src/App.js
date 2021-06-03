@@ -19,16 +19,20 @@ import { CardMedia } from "@material-ui/core";
 import "./App.scss";
 
 // Prepare data from generated manifest.
-import manifest from "./manifest.json";
+import games from "./manifest.json";
 
 const books = Array.prototype.concat.apply(
   [],
-  manifest.map((page) => page.books)
+  games.map((page) => page.books)
 );
 const stat = {
-  ngames: manifest.length,
+  ngames: games.length,
   nbooks: books.length,
   npages: books.map((book) => book.pages.length).reduce((sum, v) => v + sum, 0),
+};
+
+const getGameById = (gameId) => {
+  return games.find((game) => game.id === gameId);
 };
 
 const getBookById = (bookId) => {
@@ -56,8 +60,11 @@ export default function App() {
     <HashRouter>
       <div className="container">
         <Switch>
-          <Route path="/:bookId">
+          <Route path="/:gameId/:author">
             <Book />
+          </Route>
+          <Route path="/:gameId">
+            <Game />
           </Route>
           <Route path="/">
             <Home />
@@ -84,24 +91,50 @@ function Home() {
         {stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and
         counting...
       </div>
-      {manifest.map((item) => (
-        <PageItem {...item} />
-      ))}
+      <div>
+        {games.map((game) => (
+          <Game {...game} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function PageItem(props) {
-  const { books, timestamp } = props;
-  const history = useHistory();
+function Game(props) {
+  const { gameId } = useParams();
 
-  return (
-    <div className="page-item">
-      <div>
+  let game = null;
+  if (gameId) {
+    game = getGameById(gameId);
+  } else {
+    game = props;
+  }
+
+  if (!game) {
+    return (
+      <div className="book">
+        <ScrollToTop />
+        <Nav />
+        <div className="header">
+          <h1>Game Not Found</h1>
+          <div>
+            The game with id <strong>{gameId}</strong> cannot be found. Recheck
+            the URL or <Link to="/">go to homepage</Link>.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { books, timestamp } = game;
+
+  const content = (
+    <div className="game">
+      <div className="game-title">
         <span className="title">
           {dateformat(new Date(timestamp), "d mmmm yyyy")}
         </span>{" "}
-        <span className="meta right">{books.length} books</span>
+        <span className="subtitle">{books.length} books</span>
       </div>
       <div>
         {books.map((book) => {
@@ -111,27 +144,35 @@ function PageItem(props) {
           )?.image;
 
           return (
-            <div
-              className="page-item-book"
-              onClick={() => history.push(`/${book.id}`)}
-            >
-              <div className="page-item-book-info">
+            <Link to={`/${book.id}`} className="game-book">
+              <div className="game-book-info">
                 <h5>{book.author}'s book</h5>
                 {title ? <div className="meta">{title}</div> : null}
               </div>
               {thumbnail ? (
                 <CardMedia
-                  className="page-item-book-thumbnail"
+                  className="game-book-thumbnail"
                   image={path.join(process.env.PUBLIC_URL, "images", thumbnail)}
                   title={`${book.author}'s book`}
                 />
               ) : null}
-            </div>
+            </Link>
           );
         })}
       </div>
     </div>
   );
+
+  if (gameId) {
+    return (
+      <div>
+        <Nav />
+        {content}
+      </div>
+    );
+  } else {
+    return content;
+  }
 }
 
 function ScrollToTop() {
@@ -163,9 +204,10 @@ function Page(props) {
 }
 
 function Book() {
-  const { bookId } = useParams();
+  const { gameId, author } = useParams();
   const history = useHistory();
 
+  const bookId = `${gameId}/${author}`;
   const prevBookId = getPreviousBookId(bookId);
   const nextBookId = getNextBookId(bookId);
 
@@ -211,7 +253,7 @@ function Book() {
     );
   }
 
-  const { author, pages, timestamp } = book;
+  const { pages, timestamp } = book;
 
   return (
     <div className="book">
@@ -220,7 +262,10 @@ function Book() {
       <div className="header">
         <h1>{author}'s book</h1>
         <div className="meta">
-          Created on {dateformat(new Date(timestamp), "d mmmm yyyy HH:MM")}
+          Created on{" "}
+          <Link to={`/${gameId}`}>
+            {dateformat(new Date(timestamp), "d mmmm yyyy HH:MM")}
+          </Link>
         </div>
         <div className="meta">
           Players: {pages.map((page) => page.author).join(", ")}
