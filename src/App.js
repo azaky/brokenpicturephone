@@ -188,11 +188,15 @@ const Book = () => {
   const nextBookId = getNextBookId(bookId);
 
   const gotoPrevBook = useCallback(() => {
-    history.push(`/${prevBookId}`);
+    if (prevBookId) {
+      history.push(`/${prevBookId}`);
+    }
   }, [prevBookId, history]);
 
   const gotoNextBook = useCallback(() => {
-    history.push(`/${nextBookId}`);
+    if (nextBookId) {
+      history.push(`/${nextBookId}`);
+    }
   }, [nextBookId, history]);
 
   const gotoRandomBook = () => {
@@ -261,37 +265,35 @@ const Book = () => {
       </div>
       <div className="bottom-navigation">
         <div>
-          {prevBookId ? (
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<ArrowBackIcon />}
-              onClick={gotoPrevBook}
-            >
-              Previous
-            </Button>
-          ) : (
-            <div />
-          )}
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<ArrowBackIcon />}
+            onClick={gotoPrevBook}
+            disabled={!prevBookId}
+          >
+            Previous
+          </Button>
         </div>
         <div>
-          <Button variant="contained" color="secondary" onClick={gotoRandomBook}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={gotoRandomBook}
+          >
             Random
           </Button>
         </div>
         <div>
-          {nextBookId ? (
-            <Button
-              variant="contained"
-              color="secondary"
-              endIcon={<ArrowForwardIcon />}
-              onClick={gotoNextBook}
-            >
-              Next
-            </Button>
-          ) : (
-            <div />
-          )}
+          <Button
+            variant="contained"
+            color="secondary"
+            endIcon={<ArrowForwardIcon />}
+            onClick={gotoNextBook}
+            disabled={!nextBookId}
+          >
+            Next
+          </Button>
         </div>
       </div>
     </div>
