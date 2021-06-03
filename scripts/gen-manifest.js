@@ -32,11 +32,9 @@ const parseFile = async (filename) => {
       let imagesExist = true;
       for (const book of previousData.books) {
         for (const page of book.pages) {
-          if (page.image) {
-            if (!fs.existsSync(path.join(imagesDirectory, page.image))) {
-              imagesExist = false;
-              break;
-            }
+          if (page.image && !fs.existsSync(path.join(imagesDirectory, page.image))) {
+            imagesExist = false;
+            break;
           }
         }
         if (!imagesExist) break;

@@ -1,4 +1,3 @@
-import path from "path";
 import React, { useCallback, useEffect } from "react";
 import {
   Switch,
@@ -9,12 +8,14 @@ import {
   useLocation,
   HashRouter,
 } from "react-router-dom";
-import dateformat from "dateformat";
 
 import Button from "@material-ui/core/Button";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import { CardMedia, Chip } from "@material-ui/core";
+
+import path from "path";
+import dateformat from "dateformat";
 
 import "./App.scss";
 
@@ -55,52 +56,15 @@ const getPreviousBookId = (bookId) => {
   return books[index + 1].id;
 };
 
-export default function App() {
-  return (
-    <HashRouter>
-      <div className="container">
-        <Switch>
-          <Route path="/:gameId/:author">
-            <Book />
-          </Route>
-          <Route path="/:gameId">
-            <Game />
-          </Route>
-          <Route path="/">
-            <Home />
-          </Route>
-        </Switch>
-      </div>
-    </HashRouter>
-  );
-}
-
-function Nav() {
+const Nav = () => {
   return (
     <div className="top-navigation">
       <Link to="/">brokenpicturephone archive</Link>
     </div>
   );
-}
+};
 
-function Home() {
-  return (
-    <div>
-      <Nav />
-      <div class="meta">
-        {stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and
-        counting...
-      </div>
-      <div>
-        {games.map((game) => (
-          <Game {...game} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Game(props) {
+const Game = (props) => {
   const { gameId } = useParams();
 
   let game = null;
@@ -113,7 +77,6 @@ function Game(props) {
   if (!game) {
     return (
       <div className="book">
-        <ScrollToTop />
         <Nav />
         <div className="header">
           <h1>Game Not Found</h1>
@@ -178,19 +141,9 @@ function Game(props) {
   } else {
     return content;
   }
-}
+};
 
-function ScrollToTop() {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
-  return null;
-}
-
-function Page(props) {
+const Page = (props) => {
   const { index, author, text, image } = props;
   return (
     <div className="page">
@@ -206,9 +159,19 @@ function Page(props) {
       ) : null}
     </div>
   );
-}
+};
 
-function Book() {
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
+const Book = () => {
   const { gameId, author } = useParams();
   const history = useHistory();
 
@@ -225,17 +188,17 @@ function Book() {
   }, [nextBookId, history]);
 
   useEffect(() => {
-    function onKeyDown(e) {
+    const onKeyDown = (e) => {
       if (e.key === "ArrowLeft" && prevBookId) gotoPrevBook();
-    }
+    };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [prevBookId, gotoPrevBook]);
 
   useEffect(() => {
-    function onKeyDown(e) {
+    const onKeyDown = (e) => {
       if (e.key === "ArrowRight" && nextBookId) gotoNextBook();
-    }
+    };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [nextBookId, gotoNextBook]);
@@ -266,8 +229,7 @@ function Book() {
       <Nav />
       <div className="header">
         <div>
-          <span className="title">{author}'s book</span>
-          {' '}
+          <span className="title">{author}'s book</span>{" "}
           <Chip className="label" size="small" label={type} />
         </div>
         <div className="meta">
@@ -317,4 +279,43 @@ function Book() {
       </div>
     </div>
   );
-}
+};
+
+const Home = () => {
+  return (
+    <div>
+      <Nav />
+      <div class="meta">
+        {stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and
+        counting...
+      </div>
+      <div>
+        {games.map((game) => (
+          <Game {...game} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <HashRouter>
+      <div className="container">
+        <Switch>
+          <Route path="/:gameId/:author">
+            <Book />
+          </Route>
+          <Route path="/:gameId">
+            <Game />
+          </Route>
+          <Route path="/">
+            <Home />
+          </Route>
+        </Switch>
+      </div>
+    </HashRouter>
+  );
+};
+
+export default App;
