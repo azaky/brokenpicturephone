@@ -1,0 +1,176 @@
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  box-sizing: border-box;
+
+  @media screen and (max-width: 600px) {
+    width: 100%;
+  }
+}
+
+.top-navigation {
+  font-family: 'Sigmar One';
+  font-size: 1.5rem;
+  a {
+    text-decoration: none;
+    color: black;
+  }
+}
+
+.meta {
+  color: #606060;
+  font-size: 0.8rem;
+}
+
+.book {
+  width: 100%;
+  padding-bottom: 60px;
+
+  .title {
+    margin-bottom: 0;
+    font-size: 2rem;
+  }
+
+  .label {
+    margin-bottom: 5px;
+  }
+}
+
+.bottom-navigation {
+  position: fixed;
+  bottom: 0;
+  height: 60px;
+  width: 580px;
+  background-color: white;
+
+  font-size: 2.5em;
+  color: #17BEBB;
+  display: flex;
+  justify-content: space-evenly;
+
+  box-sizing: border-box;
+
+  button, div {
+    width: 180px;
+  }
+
+  @media screen and (max-width: 600px) {
+    width: calc(100vw - 20px);
+
+    button, div {
+      width: calc(33vw - 10px);
+    }
+  }
+}
+
+.page {
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-top: solid;
+  border-top-color:  #c0c0c0;
+  border-top-width: 1pt;
+  
+  .text {
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+
+  img {
+    max-width: 100%;
+    margin-top: 10px
+  }
+
+  &:first-child {
+    margin-top: 20px;
+  }
+}
+
+.game {
+  margin-bottom: 40px;
+  &:first-child {
+    margin-top: 20px;
+  }
+
+  .game-title {
+    position: relative;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+
+    .title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      line-height: 1.2rem;
+    }
+    
+    .subtitle {
+      @extend .meta;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+  }
+
+  .game-book {
+    display: flex;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    
+    border-bottom: solid;
+    border-bottom-color:  #c0c0c0;
+    border-bottom-width: 1pt;
+
+    // .game-book is an <a/>, so we need to reset the style.
+    text-decoration: none;
+    color: black;
+    
+    &:first-child {
+      border-top: solid;
+      border-top-color:  #c0c0c0;
+      border-top-width: 1pt;
+    }
+
+    &:hover {
+      cursor: pointer;
+      background-color: #e6e6e6;
+      .game-book-thumbnail {
+        opacity: 0.6;
+      }
+    }
+
+    .game-book-info {
+      h5 {
+        margin-top: 0;
+        margin-bottom: 0;
+        font-size: 1rem;
+      }
+    }
+    .game-book-thumbnail {
+      width: 200px;
+      height: 80px;
+      margin-left: auto;
+      order: 2;
+    }
+
+    @media screen and (max-width: 600px) {
+      .game-book-info {
+        width: 58%;
+      }
+      .game-book-thumbnail {
+        width: 40%;
+      }
+    }
+  }
+}
