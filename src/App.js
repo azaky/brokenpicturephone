@@ -115,21 +115,19 @@ const Game = (props) => {
       <div>
         {books.map((book) => {
           const title = book.pages.find((page) => !!page.text)?.text;
-          const thumbnail = book.pages.find(
-            (page) => !!page.image && !page.text
-          )?.image;
+          const {id, author, thumbnail} = book;
 
           return (
-            <Link to={`/${book.id}`} className="game-book">
+            <Link to={`/${id}`} className="game-book">
               <div className="game-book-info">
-                <h5>{book.author}'s book</h5>
+                <h5>{author}'s book</h5>
                 {title ? <div className="meta">{title}</div> : null}
               </div>
               {thumbnail ? (
                 <CardMedia
                   className="game-book-thumbnail"
                   image={path.join(process.env.PUBLIC_URL, "images", thumbnail)}
-                  title={`${book.author}'s book`}
+                  title={`${author}'s book`}
                 />
               ) : null}
             </Link>
