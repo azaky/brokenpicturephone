@@ -25,15 +25,20 @@ const parseFile = async (filename) => {
 
     console.log(`Parsing file ${filename} ...`);
 
-    const previousData = previousManifest.find(
-      (data) => data.filename === filename
-    );
+    const id = path.parse(filename).name;
+
+    const previousData = previousManifest.find((data) => data.id === id);
     if (previousData) {
-      let imagesExist = true;
+      let imagesExist = true,
+        missingImage = "";
       for (const book of previousData.books) {
         for (const page of book.pages) {
-          if (page.image && !fs.existsSync(path.join(imagesDirectory, page.image))) {
+          if (
+            page.image &&
+            !fs.existsSync(path.join(imagesDirectory, page.image))
+          ) {
             imagesExist = false;
+            missingImage = page.image;
             break;
           }
         }
@@ -44,6 +49,8 @@ const parseFile = async (filename) => {
           `Skipping file ${filename}: importing from the previous manifest`
         );
         return previousData;
+      } else {
+        console.warn(`File ${filename}: previous manifest exists but image ${missingImage} missing. Will re-parse the whole file`);
       }
     }
 
@@ -74,8 +81,6 @@ const parseFile = async (filename) => {
       );
       return null;
     }
-
-    const id = path.parse(filename).name;
 
     const articles = dom.window.document.getElementsByTagName("article");
     const books = [...articles]
