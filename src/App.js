@@ -7,6 +7,7 @@ import {
   useHistory,
   useLocation,
   HashRouter,
+  Redirect,
 } from "react-router-dom";
 
 import Button from "@material-ui/core/Button";
@@ -34,6 +35,10 @@ const stat = {
 
 const getGameById = (gameId) => {
   return games.find((game) => game.id === gameId);
+};
+
+const getRandomBookId = () => {
+  return books[Math.floor(Math.random() * books.length)].id;
 };
 
 const getBookById = (bookId) => {
@@ -69,6 +74,9 @@ const Game = (props) => {
 
   let game = null;
   if (gameId) {
+    if (gameId === "random") {
+      return <Redirect to={`/${getRandomBookId()}`} />;
+    }
     game = getGameById(gameId);
   } else {
     game = props;
@@ -187,6 +195,10 @@ const Book = () => {
     history.push(`/${nextBookId}`);
   }, [nextBookId, history]);
 
+  const gotoRandomBook = () => {
+    history.push(`/random`);
+  };
+
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === "ArrowLeft" && prevBookId) gotoPrevBook();
@@ -248,7 +260,7 @@ const Book = () => {
         ))}
       </div>
       <div className="bottom-navigation">
-        <div className="left">
+        <div>
           {prevBookId ? (
             <Button
               variant="contained"
@@ -262,7 +274,12 @@ const Book = () => {
             <div />
           )}
         </div>
-        <div className="right">
+        <div>
+          <Button variant="contained" color="secondary" onClick={gotoRandomBook}>
+            Random
+          </Button>
+        </div>
+        <div>
           {nextBookId ? (
             <Button
               variant="contained"

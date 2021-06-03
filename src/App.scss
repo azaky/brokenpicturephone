@@ -62,14 +62,14 @@ body {
   box-sizing: border-box;
 
   button, div {
-    width: 250px;
+    width: 180px;
   }
 
   @media screen and (max-width: 600px) {
     width: calc(100vw - 20px);
 
     button, div {
-      width: calc(50vw - 50px);
+      width: calc(33vw - 10px);
     }
   }
 }
