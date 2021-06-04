@@ -311,8 +311,14 @@ const Book = () => {
 };
 
 const Home = () => {
+  const history = useHistory();
+
+  const gotoRandomBook = () => {
+    history.push(`/random`);
+  };
+
   return (
-    <div>
+    <div className="home">
       <Nav />
       <div class="meta">
         {stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and
@@ -322,6 +328,17 @@ const Home = () => {
         {games.map((game) => (
           <Game {...game} />
         ))}
+      </div>
+      <div className="bottom-navigation">
+        <div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={gotoRandomBook}
+          >
+            View Random Book
+          </Button>
+        </div>
       </div>
     </div>
   );
