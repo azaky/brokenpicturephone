@@ -61,6 +61,18 @@ const getPreviousBookId = (bookId) => {
   return books[index + 1].id;
 };
 
+const getImageUrl = (image) => {
+  if (process.env.PUBLIC_URL) {
+    if (process.env.PUBLIC_URL.startsWith('/')) {
+      return path.join(process.env.PUBLIC_URL, "images", image);
+    } else {
+      return path.join(new URL(process.env.PUBLIC_URL).pathname, "images", image);
+    }
+  } else {
+    return path.join("images", image)
+  }
+};
+
 const Nav = () => {
   return (
     <div className="top-navigation">
@@ -126,7 +138,7 @@ const Game = (props) => {
               {thumbnail ? (
                 <CardMedia
                   className="game-book-thumbnail"
-                  image={path.join(process.env.PUBLIC_URL, "images", thumbnail)}
+                  image={getImageUrl(thumbnail)}
                   title={`${author}'s book`}
                 />
               ) : null}
@@ -159,7 +171,7 @@ const Page = (props) => {
       {text ? <div className="text">{text}</div> : null}
       {image ? (
         <img
-          src={path.join(process.env.PUBLIC_URL, "images", image)}
+          src={getImageUrl(image)}
           alt={`Page ${index} by ${author}`}
         />
       ) : null}
