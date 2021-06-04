@@ -4,11 +4,11 @@
 
 This is a web app for viewing downloaded games/books of [Broken Picture Phone](https://www.brokenpicturephone.com/).
 
-# Adding New Books
+## Adding New Books
 
 To add new books, simply add the downloaded HTML to the `books` folder.
 
-## Adding Custom Book
+### Adding Custom Book
 
 You may add your custom book, but we expect (mostly) exact same format as downloaded books from BPP games in order for this site to generate things correctly.
 
@@ -50,7 +50,7 @@ This is the format of the HTML file that we expect:
 
 See [existing books](https://github.com/azaky/brokenpicturephone/tree/master/books) for reference. [This](https://github.com/azaky/brokenpicturephone/blob/master/books/gp-1622470716184.html) is an example of a custom book from Gartic Phone.
 
-# Developing
+## Developing
 
 This app is built with [Create-React-App](https://create-react-app.dev/). Node JS 14+ is required for developing, as we use [optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining).
 
@@ -86,7 +86,7 @@ This app is built with [Create-React-App](https://create-react-app.dev/). Node J
 
    If you need to add another book in the middle of development, you can run `npm run gen-manifest` again (in a separate terminal). The web app will automatically reload.
 
-# Deploying
+## Deploying
 
 ```bash
 export PUBLIC_URL=https://app.azaky.io/bpp
