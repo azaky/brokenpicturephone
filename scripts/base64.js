@@ -1,4 +1,6 @@
-// This script converts images to base64 in-place
+// This script converts images to base64 in-place.
+// Open the html via a browser, open developer's console, and paste the following script.
+// Then save the webpage.
 
 // https://stackoverflow.com/a/20285053
 const toDataURL = url => new Promise(resolve => {
