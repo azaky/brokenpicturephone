@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Switch,
   Route,
@@ -61,17 +61,19 @@ const getPreviousBookId = (bookId) => {
   return books[index + 1].id;
 };
 
-const getImageUrl = (image) => {
+const resolveUrl = (...args) => {
   if (process.env.PUBLIC_URL) {
-    if (process.env.PUBLIC_URL.startsWith('/')) {
-      return path.join(process.env.PUBLIC_URL, "images", image);
+    if (process.env.PUBLIC_URL.startsWith("/")) {
+      return path.join(process.env.PUBLIC_URL, ...args);
     } else {
-      return path.join(new URL(process.env.PUBLIC_URL).pathname, "images", image);
+      return path.join(new URL(process.env.PUBLIC_URL).pathname, ...args);
     }
   } else {
-    return path.join("images", image)
+    return path.join(...args);
   }
 };
+
+const getImageUrl = (image) => resolveUrl("images", image);
 
 const Nav = () => {
   return (
@@ -114,9 +116,9 @@ const Game = (props) => {
   const content = (
     <div className="game">
       <div className="game-title">
-        <span className="title">
+        <Link className="title" to={`/${game.id}`}>
           {dateformat(new Date(timestamp), "d mmmm yyyy")}
-        </span>{" "}
+        </Link>
         {type ? (
           <span>
             <Chip size="small" label={type} />
@@ -127,7 +129,7 @@ const Game = (props) => {
       <div>
         {books.map((book) => {
           const title = book.pages.find((page) => !!page.text)?.text;
-          const {id, author, thumbnail} = book;
+          const { id, author, thumbnail } = book;
 
           return (
             <Link to={`/${id}`} className="game-book">
@@ -163,6 +165,12 @@ const Game = (props) => {
 
 const Page = (props) => {
   const { index, author, text, image } = props;
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [image]);
+
   return (
     <div className="page">
       <div className="meta">
@@ -170,10 +178,17 @@ const Page = (props) => {
       </div>
       {text ? <div className="text">{text}</div> : null}
       {image ? (
-        <img
-          src={getImageUrl(image)}
-          alt={`Page ${index} by ${author}`}
-        />
+        <div>
+          {!imageLoaded && (
+            <img src={resolveUrl("placeholder.png")} alt="placeholder" />
+          )}
+          <img
+            src={getImageUrl(image)}
+            alt={`Page ${index} by ${author}`}
+            style={!imageLoaded ? { display: "none" } : {}}
+            onLoad={() => setImageLoaded(true)}
+          />
+        </div>
       ) : null}
     </div>
   );
@@ -320,7 +335,7 @@ const Home = () => {
   return (
     <div className="home">
       <Nav />
-      <div class="meta">
+      <div className="meta">
         {stat.ngames} games, {stat.nbooks} books, {stat.npages} pages, and
         counting...
       </div>
