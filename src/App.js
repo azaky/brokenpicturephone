@@ -37,12 +37,32 @@ const getGameById = (gameId) => {
   return games.find((game) => game.id === gameId);
 };
 
-const getRandomBookId = () => {
-  return books[Math.floor(Math.random() * books.length)].id;
+const getRandomGameId = () => {
+  return games[Math.floor(Math.random() * games.length)].id;
+};
+
+const getNextGameId = (gameId) => {
+  const index = games.findIndex((game) => game.id === gameId);
+  if (index === -1 || index === 0) {
+    return null;
+  }
+  return games[index - 1].id;
+};
+
+const getPreviousGameId = (gameId) => {
+  const index = games.findIndex((game) => game.id === gameId);
+  if (index === -1 || index === games.length - 1) {
+    return null;
+  }
+  return games[index + 1].id;
 };
 
 const getBookById = (bookId) => {
   return books.find((book) => book.id === bookId);
+};
+
+const getRandomBookId = () => {
+  return books[Math.floor(Math.random() * books.length)].id;
 };
 
 const getNextBookId = (bookId) => {
@@ -86,10 +106,33 @@ const Nav = () => {
 const Game = (props) => {
   const { gameId } = useParams();
 
+  const history = useHistory();
+  const prevGameId = getPreviousGameId(gameId);
+  const nextGameId = getNextGameId(gameId);
+
+  const gotoPrevGame = useCallback(() => {
+    if (prevGameId) {
+      history.push(`/${prevGameId}`);
+    }
+  }, [prevGameId, history]);
+
+  const gotoNextGame = useCallback(() => {
+    if (nextGameId) {
+      history.push(`/${nextGameId}`);
+    }
+  }, [nextGameId, history]);
+
+  const gotoRandomGame = () => {
+    history.push(`/random-game`);
+  };
+
   let game = null;
   if (gameId) {
     if (gameId === "random") {
       return <Redirect to={`/${getRandomBookId()}`} />;
+    }
+    if (gameId === "random-game") {
+      return <Redirect to={`/${getRandomGameId()}`} />;
     }
     game = getGameById(gameId);
   } else {
@@ -113,54 +156,81 @@ const Game = (props) => {
 
   const { books, timestamp, type } = game;
 
-  const content = (
-    <div className="game">
-      <div className="game-title">
-        <Link className="title" to={`/${game.id}`}>
-          {dateformat(new Date(timestamp), "d mmmm yyyy")}
-        </Link>
-        {type ? (
-          <span>
-            <Chip size="small" label={type} />
-          </span>
-        ) : null}
-        <span className="subtitle">{books.length} books</span>
-      </div>
-      <div>
-        {books.map((book) => {
-          const title = book.pages.find((page) => !!page.text)?.text;
-          const { id, author, thumbnail } = book;
+  return (
+    <div>
+      {gameId ? <Nav /> : null}
+      <div className="game">
+        <div className="game-title">
+          <Link className="title" to={`/${game.id}`}>
+            {dateformat(new Date(timestamp), "d mmmm yyyy")}
+          </Link>
+          {type ? (
+            <span>
+              <Chip size="small" label={type} />
+            </span>
+          ) : null}
+          <span className="subtitle">{books.length} books</span>
+        </div>
+        <div>
+          {books.map((book) => {
+            const title = book.pages.find((page) => !!page.text)?.text;
+            const { id, author, thumbnail } = book;
 
-          return (
-            <Link to={`/${id}`} className="game-book">
-              <div className="game-book-info">
-                <h5>{author}'s book</h5>
-                {title ? <div className="meta">{title}</div> : null}
-              </div>
-              {thumbnail ? (
-                <CardMedia
-                  className="game-book-thumbnail"
-                  image={getImageUrl(thumbnail)}
-                  title={`${author}'s book`}
-                />
-              ) : null}
-            </Link>
-          );
-        })}
+            return (
+              <Link to={`/${id}`} className="game-book">
+                <div className="game-book-info">
+                  <h5>{author}'s book</h5>
+                  {title ? <div className="meta">{title}</div> : null}
+                </div>
+                {thumbnail ? (
+                  <CardMedia
+                    className="game-book-thumbnail"
+                    image={getImageUrl(thumbnail)}
+                    title={`${author}'s book`}
+                  />
+                ) : null}
+              </Link>
+            );
+          })}
+        </div>
+        {gameId ? (
+          <div className="bottom-navigation">
+            <div>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<ArrowBackIcon />}
+                onClick={gotoPrevGame}
+                disabled={!prevGameId}
+              >
+                Previous
+              </Button>
+            </div>
+            <div>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={gotoRandomGame}
+              >
+                Random
+              </Button>
+            </div>
+            <div>
+              <Button
+                variant="contained"
+                color="secondary"
+                endIcon={<ArrowForwardIcon />}
+                onClick={gotoNextGame}
+                disabled={!nextGameId}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
-
-  if (gameId) {
-    return (
-      <div>
-        <Nav />
-        {content}
-      </div>
-    );
-  } else {
-    return content;
-  }
 };
 
 const Page = (props) => {

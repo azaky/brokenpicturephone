@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -25,7 +25,7 @@ body {
 }
 
 .top-navigation {
-  font-family: 'Sigmar One';
+  font-family: "Sigmar One";
   font-size: 1.5rem;
   a {
     text-decoration: none;
@@ -41,7 +41,7 @@ body {
   background-color: white;
 
   font-size: 2.5em;
-  color: #17BEBB;
+  color: #17bebb;
   display: flex;
   justify-content: space-evenly;
 
@@ -62,9 +62,13 @@ body {
   .label {
     margin-bottom: 5px;
   }
+}
 
+.book,
+.game {
   .bottom-navigation {
-    button, div {
+    button,
+    div {
       width: 180px;
       @media screen and (max-width: 600px) {
         width: calc(33vw - 20px);
@@ -75,12 +79,14 @@ body {
 
 .home {
   .bottom-navigation {
-    button, div {
+    button,
+    div {
       width: 550px;
     }
 
     @media screen and (max-width: 600px) {
-      button, div {
+      button,
+      div {
         width: calc(100vw - 60px);
       }
     }
@@ -92,9 +98,9 @@ body {
   margin-top: 5px;
   margin-bottom: 5px;
   border-top: solid;
-  border-top-color:  #c0c0c0;
+  border-top-color: #c0c0c0;
   border-top-width: 1pt;
-  
+
   .text {
     margin-top: 5px;
     font-weight: bold;
@@ -103,7 +109,7 @@ body {
 
   img {
     max-width: 100%;
-    margin-top: 10px
+    margin-top: 10px;
   }
 
   &:first-child {
@@ -129,7 +135,7 @@ body {
       font-size: 1.2rem;
       line-height: 1.2rem;
     }
-    
+
     .subtitle {
       @extend .meta;
       position: absolute;
@@ -142,18 +148,18 @@ body {
     display: flex;
     padding-top: 5px;
     padding-bottom: 5px;
-    
+
     border-bottom: solid;
-    border-bottom-color:  #c0c0c0;
+    border-bottom-color: #c0c0c0;
     border-bottom-width: 1pt;
 
     // .game-book is an <a/>, so we need to reset the style.
     text-decoration: none;
     color: black;
-    
+
     &:first-child {
       border-top: solid;
-      border-top-color:  #c0c0c0;
+      border-top-color: #c0c0c0;
       border-top-width: 1pt;
     }
 
