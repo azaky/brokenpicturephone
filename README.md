@@ -6,7 +6,7 @@ This is a web app for viewing downloaded games/books of [Broken Picture Phone](h
 
 ## Adding New Books
 
-To add new books, simply add the downloaded HTML to the `books` folder.
+To add new books, simply add the downloaded HTML to the `books` folder. To upload books via GitHub web, [click here](https://github.com/azaky/brokenpicturephone/upload/master/books);
 
 ### Adding Custom Book
 
